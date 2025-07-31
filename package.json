@@ -6,6 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:server": "concurrently \"npx webpack --config webpack/server/webpack.dev.js --watch\" \"nodemon\"",
     "dev:client": "npx webpack serve --config webpack/client/webpack.dev.js",
+    "build:server": "npx webpack --config webpack/server/webpack.prod.js",
     "build": "npx webpack --config webpack/client/webpack.prod.js"
   },
   "nodemonConfig": {
