@@ -15,7 +15,7 @@ const pool = new Pool({
 
 app.get("/", async (req, res) => {
   try {
-    const {rows:result} = await pool.query("SELECT NOW()");
+    const {rows:result} = await pool.query("SELECT * FROM users");
 
     return res.status(200).json({
       message: "hello",
