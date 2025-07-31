@@ -1,9 +1,3 @@
-import express from "express";
+import app from "../app/main";
 
-const app = express();
-
-app.get("/", (req, res)=>{
-    return res.status(200).json({
-        message: "hello"
-    })
-})
+export default app;
