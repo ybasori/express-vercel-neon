@@ -1,42 +1,51 @@
 import express from "express";
-import { Pool } from "pg";
+import cookieParser from "cookie-parser";
+import routes from "./routes";
+import { expandRouter } from "./helper";
 import dotenv from "dotenv";
-import { renderHtml } from "./helper";
 
 dotenv.config();
+
 const app = express();
 
-// Set up PostgreSQL pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false, // Required for Neon
-  },
+app.use(express.static("public"));
+app.use(express.json());
+app.use(cookieParser());
+app.use("/bulma", express.static("node_modules/bulma/css"));
+app.use("/fa", express.static("node_modules/@fortawesome/fontawesome-free"));
+app.use("/api", (req, _res, next) => {
+  const coloredMethod = `\x1b[32m[${req.method}]\x1b[0m`;
+  const queryStr = Object.entries(req.query)
+    .map(([key, value]) => {
+      if (Array.isArray(value)) {
+        return value
+          .map((v) => `${key}=${encodeURIComponent(v.toString())}`)
+          .join("&");
+      } else {
+        return `${key}=${encodeURIComponent(value?.toString() ?? "")}`;
+      }
+    })
+    .join("&");
+
+  const timestamp = new Date().toISOString();
+  console.log(
+    `[${timestamp}]${coloredMethod} ${req.path}${
+      queryStr ? "?" + queryStr : ""
+    }`
+  );
+  console.log(``);
+  next();
 });
 
-app.get("/api", async (req, res) => {
-  try {
-    const {rows:result} = await pool.query("SELECT * FROM users");
+expandRouter(routes).forEach((item) =>
+  item.controller && item.method
+    ? app[item.method](
+        item.path,
+        item.middleware ? item.middleware : [],
+        item.controller
+      )
+    : null
+);
 
-    return res.status(200).json({
-      message: "hello 5 jajaja",
-      result,
-    });
-  } catch (err:any) {
-    return res.status(500).json({
-      message: err.message,
-    });
-  }
-});
-
-
-app.get("/{*any}", async (req, res) => {
-  
-      res.status(200).send(
-        renderHtml({
-          title: "nice"
-        })
-      );
-});
 
 module.exports = app;

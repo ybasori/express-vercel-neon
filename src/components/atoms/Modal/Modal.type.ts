@@ -1,0 +1,1 @@
+export interface IModal{ title: string; children:React.ReactNode; onClose:()=>void; isStaticBackdrop?:boolean }
