@@ -6,5 +6,6 @@ module.exports = merge(common, {
   entry: "./app/main.ts",
   output:{
     libraryTarget: "commonjs2", // 👈 required
-  },
+    path: path.resolve(__dirname, "../../api")
+  }
 });

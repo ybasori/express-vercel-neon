@@ -4,9 +4,9 @@
     "composite": true,
     "baseUrl": "./",
     "paths": {
-      "@app/*": ["./app/*"]
+      "@src/*":["./src/*"],
     },
   },
-  "include": ["app"],
+  "include": ["src"],
   "exclude": ["node_modules"]
 }

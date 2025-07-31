@@ -1,6 +1,7 @@
 import express from "express";
 import { Pool } from "pg";
 import dotenv from "dotenv";
+import { renderHtml } from "./helper";
 
 dotenv.config();
 const app = express();
@@ -13,12 +14,12 @@ const pool = new Pool({
   },
 });
 
-app.get("/", async (req, res) => {
+app.get("/api", async (req, res) => {
   try {
     const {rows:result} = await pool.query("SELECT * FROM users");
 
     return res.status(200).json({
-      message: "hello 5",
+      message: "hello 5 jajaja",
       result,
     });
   } catch (err:any) {
@@ -26,6 +27,16 @@ app.get("/", async (req, res) => {
       message: err.message,
     });
   }
+});
+
+
+app.get("/{*any}", async (req, res) => {
+  
+      res.status(200).send(
+        renderHtml({
+          title: "nice"
+        })
+      );
 });
 
 module.exports = app;
