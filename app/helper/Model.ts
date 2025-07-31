@@ -144,6 +144,14 @@ class Model {
             return `${table}.${key} IN ${filterValue}`;
           }
 
+          // mysql
+          // if (not) {
+          //   return `${table}.${key} NOT LIKE '${filterValue}'`;
+          // }
+
+          // return `${table}.${key} LIKE '${filterValue}'`;
+
+          // pgsql
           if (not) {
             return `${table}.${key}::text NOT LIKE '${filterValue}'`;
           }
@@ -541,6 +549,9 @@ class Model {
         console.log(`[${timestamp}]\x1b[38;2;255;165;0m[SQL]\x1b[0m ${query}`);
         console.log(``);
 
+        // mysql
+        // const [mainResult] = await db.query(query);
+        // pgsql
         const {rows:mainResult} = await db.query(query);
 
         let joinedResult = [...(mainResult as unknown[] as any[])];
@@ -727,6 +738,9 @@ class Model {
 
               if (!!relations && relations[joinName].type === "hasMany") {
                 const data = getAllData[index];
+                // mysql
+                // const [[{total}]] = countAllData[index];
+                // pgsql
                 const {rows: [{total}]} = countAllData[index];
                 joinedResult[z][joinName] = { ...item[joinName], data, total };
               }
@@ -996,11 +1010,24 @@ class Model {
       !!alternativeTable ? alternativeTable : this.table ?? ""
     );
 
+    // mysql
+    // const set = [
+    //   ...Object.keys(payload).map((key) =>
+    //     payload[key] === null ? `${!!alternativeTable ? alternativeTable : this.table ?? ""}.${key}= NULL ` : `${!!alternativeTable ? alternativeTable : this.table ?? ""}.${key}='${payload[key]}'`
+    //   ),
+    //   `${!!alternativeTable ? alternativeTable : this.table ?? ""}.updated_at = '${new Date()
+    //     .toISOString()
+    //     .replace("T", " ")
+    //     .replace("Z", "")
+    //     .slice(0, 19)}'`,
+    // ].join(" , ");
+
+    //pgsql
     const set = [
       ...Object.keys(payload).map((key) =>
-        payload[key] === null ? `${!!alternativeTable ? alternativeTable : this.table ?? ""}.${key}= NULL ` : `${!!alternativeTable ? alternativeTable : this.table ?? ""}.${key}='${payload[key]}'`
+        payload[key] === null ? `${key}= NULL ` : `${key}='${payload[key]}'`
       ),
-      `${!!alternativeTable ? alternativeTable : this.table ?? ""}.updated_at = '${new Date()
+      `updated_at = '${new Date()
         .toISOString()
         .replace("T", " ")
         .replace("Z", "")
