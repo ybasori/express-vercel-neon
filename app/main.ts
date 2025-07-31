@@ -18,7 +18,7 @@ app.get("/", async (req, res) => {
     const {rows:result} = await pool.query("SELECT * FROM users");
 
     return res.status(200).json({
-      message: "hello",
+      message: "hello 5",
       result,
     });
   } catch (err:any) {
