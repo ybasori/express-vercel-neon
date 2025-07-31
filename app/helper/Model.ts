@@ -727,7 +727,7 @@ class Model {
 
               if (!!relations && relations[joinName].type === "hasMany") {
                 const data = getAllData[index];
-                const [[{ total }]] = countAllData[index];
+                const {rows: [{total}]} = countAllData[index];
                 joinedResult[z][joinName] = { ...item[joinName], data, total };
               }
             });

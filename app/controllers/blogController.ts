@@ -53,7 +53,7 @@ const blogController = {
         ],
         show,
       });
-      const [[blogContentTotal]] = await blogContentModel.countByFilter({
+      const {rows: [blogContentTotal]} = await blogContentModel.countByFilter({
         filter: {
           deleted_at: "null",
           ...filter,
@@ -159,7 +159,7 @@ const blogController = {
         join: [{ name: "content", joinType: "leftJoin", show: ["uid"] }],
         show,
       });
-      const [[blogContentTotal]] = await blogContentModel.countByFilter({
+      const {rows: [blogContentTotal]} = await blogContentModel.countByFilter({
         filter: {
           deleted_at: "null",
           ...filter,
@@ -317,7 +317,7 @@ const blogController = {
         ],
         show,
       });
-      const [[blogContentTotal]] = await blogContentModel.countByFilter({
+      const {rows: [blogContentTotal]} = await blogContentModel.countByFilter({
         filter: {
           deleted_at: "null",
           ...filter,
@@ -384,7 +384,7 @@ const blogController = {
         ],
         show,
       });
-      const [[blogContentTotal]] = await blogContentModel.countByFilter({
+      const {rows: [blogContentTotal]} = await blogContentModel.countByFilter({
         filter: {
           deleted_at: "null",
           ...filter,
@@ -449,7 +449,7 @@ const blogController = {
         ],
         show,
       });
-      const [[blogContentTotal]] = await blogContentModel.countByFilter({
+      const {rows: [blogContentTotal]} = await blogContentModel.countByFilter({
         filter: {
           created_by_user_id: decoded.id,
           deleted_at: "null",
@@ -740,7 +740,7 @@ const blogController = {
         join: [{ name: "created_by", show: ["name"] }],
         show,
       });
-      const [[blogContentTotal]] = await blogContentModel.countByFilter({
+      const {rows: [blogContentTotal]} = await blogContentModel.countByFilter({
         filter: {
           created_by_user_id: decoded.id,
           deleted_at: "null",
@@ -937,7 +937,7 @@ const blogController = {
         join: [{ name: "created_by", show: ["name"] }],
         show,
       });
-      const [[blogContentTotal]] = await blogContentModel.countByFilter({
+      const {rows: [blogContentTotal]} = await blogContentModel.countByFilter({
         filter: {
           created_by_user_id: decoded.id,
           deleted_at: "null",
