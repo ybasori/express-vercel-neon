@@ -76,6 +76,7 @@ const authController ={
         
         return res.json({ statusCode: 200, message: "Welcome!", result: {name: user.name, username: user.username, joined_at: user.created_at} });
     }catch(err){
+        console.log(err)
             return res.status(500).json({
                 statusCode: 500,
                 message: err,
