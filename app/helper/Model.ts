@@ -175,7 +175,7 @@ class Model {
       const offset =
         (Number(pagination.page.of) - 1) * Number(pagination.page.size);
 
-      return `LIMIT ${offset}, ${pagination.page.size}`;
+      return `LIMIT ${pagination.page.size} OFFSET ${offset}`;
     }
 
     return "";
