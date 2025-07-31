@@ -49,6 +49,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.0.0",
+    "@reduxjs/toolkit": "^2.8.2",
     "bcrypt": "^6.0.0",
     "bulma": "^1.0.4",
     "concurrently": "^9.2.0",
