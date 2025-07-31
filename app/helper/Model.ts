@@ -145,10 +145,10 @@ class Model {
           }
 
           if (not) {
-            return `${table}.${key} NOT LIKE '${filterValue}'`;
+            return `${table}.${key}::text NOT LIKE '${filterValue}'`;
           }
 
-          return `${table}.${key} LIKE '${filterValue}'`;
+          return `${table}.${key}::text LIKE '${filterValue}'`;
         });
 
       return queries;
