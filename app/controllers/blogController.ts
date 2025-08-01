@@ -448,14 +448,14 @@ const blogController = {
           { name: "created_by", show: ["name"] },
         ],
         show,
-      }, "iniiiii");
+      });
       const total = await blogContentModel.countByFilter({
         filter: {
           created_by_user_id: decoded.id,
           deleted_at: "null",
           ...filter,
         },
-      });
+      }, "iniiiii");
       return res.status(200).json({
         statusCode: 200,
         message: "Success!",

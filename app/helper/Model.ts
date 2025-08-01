@@ -168,10 +168,10 @@ class Model {
           if (dialect === "pgsql") {
             // pgsql
             if (not) {
-              return `${table}.${key}::text NOT LIKE '${filterValue}'`;
+              return `${table}.${key}::text NOT ILIKE '${filterValue}'`;
             }
 
-            return `${table}.${key}::text LIKE '${filterValue}'`;
+            return `${table}.${key}::text ILIKE '${filterValue}'`;
           }
 
           return "";
