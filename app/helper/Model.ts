@@ -238,9 +238,12 @@ class Model {
   }
 
   joinSqlQuery(
-    joinArr: IJoin[],
-    relationObj: IRelation | null,
-    parentTable: string
+    {
+      joinArr,
+      relationObj,
+      parentTable,
+    }: { joinArr: IJoin[]; relationObj: IRelation | null; parentTable: string },
+    debug?: string
   ) {
     let sqlJoin = "";
 
@@ -319,11 +322,11 @@ class Model {
         sqlJoin =
           sqlJoin +
           " " +
-          this.joinSqlQuery(
-            joinArr[i].join as IJoin[],
-            relationObj?.[name].relatedTo.relations ?? null,
-            aliasTable
-          );
+          this.joinSqlQuery({
+            joinArr: joinArr[i].join as IJoin[],
+            relationObj: relationObj?.[name].relatedTo.relations ?? null,
+            parentTable: aliasTable,
+          });
       }
     }
 
@@ -391,20 +394,22 @@ class Model {
     return sqlJoin !== "" ? ", " + sqlJoin : "";
   }
 
-  joinFilterSqlQuery({
-    joinArr,
-    relationObj,
-    dialect,
-  }: {
-    joinArr: IJoin[];
-    relationObj: IRelation | null;
-    dialect: "pgsql" | "mysql";
-  }, debug?: string): // parentTable: string
+  joinFilterSqlQuery(
+    {
+      joinArr,
+      relationObj,
+      dialect,
+    }: {
+      joinArr: IJoin[];
+      relationObj: IRelation | null;
+      dialect: "pgsql" | "mysql";
+    },
+    debug?: string
+  ): // parentTable: string
   string[] {
-    
-      if(!!debug){
-        console.log("=======", debug, joinArr, relationObj, dialect)
-      }
+    if (!!debug) {
+      console.log("=======", debug, joinArr, relationObj, dialect);
+    }
     let filterQuery: string[] = [];
 
     for (let i = 0; i < joinArr.length; i++) {
@@ -514,11 +519,19 @@ class Model {
           .map(([key, value]) => {
             const joinType = key.split("_")[0];
             return {
-              name: key.replace(/^(leftjoin_|rightjoin_|join_)/, "").split("_")[0],
-              joinType: joinType==="leftjoin"?"leftJoin":joinType==="rightjoin"?"rightJoin":"join",
+              name: key
+                .replace(/^(leftjoin_|rightjoin_|join_)/, "")
+                .split("_")[0],
+              joinType:
+                joinType === "leftjoin"
+                  ? "leftJoin"
+                  : joinType === "rightjoin"
+                  ? "rightJoin"
+                  : "join",
               filter: {
-                [key.replace(/^(leftjoin_|rightjoin_|join_)/, "").split("_")[1]]:
-                  value,
+                [key
+                  .replace(/^(leftjoin_|rightjoin_|join_)/, "")
+                  .split("_")[1]]: value,
               },
             };
           });
@@ -555,11 +568,13 @@ class Model {
               ) === i
           );
 
-        const joinQuery = this.joinSqlQuery(
-          joinSql,
-          !!alternativeRelations ? alternativeRelations : this.relations,
-          !!alternativeTable ? alternativeTable : this.table ?? ""
-        );
+        const joinQuery = this.joinSqlQuery({
+          joinArr: joinSql,
+          relationObj: !!alternativeRelations
+            ? alternativeRelations
+            : this.relations,
+          parentTable: !!alternativeTable ? alternativeTable : this.table ?? "",
+        });
         const selectJoinQuery = this.joinColumnSqlQuery(
           joinSql,
           !!alternativeRelations ? alternativeRelations : this.relations
@@ -881,7 +896,6 @@ class Model {
           return item;
         });
 
-        
         if (!!debug) {
           console.log("==========", debug, joinedResult);
         }
@@ -962,7 +976,12 @@ class Model {
         const joinType = key.split("_")[0];
         return {
           name: key.replace(/^(leftjoin_|rightjoin_|join_)/, "").split("_")[0],
-          joinType: joinType==="leftjoin"?"leftJoin":joinType==="rightjoin"?"rightJoin":"join",
+          joinType:
+            joinType === "leftjoin"
+              ? "leftJoin"
+              : joinType === "rightjoin"
+              ? "rightJoin"
+              : "join",
           filter: {
             [key.replace(/^(leftjoin_|rightjoin_|join_)/, "").split("_")[1]]:
               value,
@@ -1002,22 +1021,28 @@ class Model {
           ) === i
       );
 
+      if(!!debug){
+        console.log("====1", debug, joinSql, combineJoinSql)
+      }
 
-    const joinQuery = this.joinSqlQuery(
-      joinSql,
-      this.relations,
-      !!alternativeTable ? alternativeTable : this.table ?? ""
-    );
-    const filterJoinQuery = this.joinFilterSqlQuery({
-      joinArr: combineJoinSql as IJoin[],
+    const joinQuery = this.joinSqlQuery({
+      joinArr: joinSql,
       relationObj: this.relations,
-      dialect: !!alternativeDialect
-        ? alternativeDialect
-        : !!this.dialect
-        ? this.dialect
-        : "mysql",
-      // this.table ?? ""
-    }, debug);
+      parentTable: !!alternativeTable ? alternativeTable : this.table ?? "",
+    },
+      debug);
+    const filterJoinQuery = this.joinFilterSqlQuery(
+      {
+        joinArr: combineJoinSql as IJoin[],
+        relationObj: this.relations,
+        dialect: !!alternativeDialect
+          ? alternativeDialect
+          : !!this.dialect
+          ? this.dialect
+          : "mysql",
+        // this.table ?? ""
+      },
+    );
 
     const query = `SELECT COUNT(*) AS total FROM ${
       !!alternativeTable ? alternativeTable : this.table ?? ""
@@ -1110,11 +1135,13 @@ class Model {
           item.joinType === "join")
     ) as unknown as IJoin[];
 
-    const joinQuery = this.joinSqlQuery(
-      joinSql,
-      !!alternativeRelations ? alternativeRelations : this.relations,
-      !!alternativeTable ? alternativeTable : this.table ?? ""
-    );
+    const joinQuery = this.joinSqlQuery({
+      joinArr: joinSql,
+      relationObj: !!alternativeRelations
+        ? alternativeRelations
+        : this.relations,
+      parentTable: !!alternativeTable ? alternativeTable : this.table ?? "",
+    });
 
     let set = "";
 
