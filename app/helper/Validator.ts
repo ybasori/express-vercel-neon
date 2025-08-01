@@ -1,4 +1,5 @@
 import dbs from "@app/config/db";
+import pg from "pg";
 
 type IRuleCustom = (config: {
   setMessage: (value: string) => boolean;
@@ -79,7 +80,25 @@ const uniqueness = async function (
   if (ignoreId != null && ignoreIdColumn != null) {
     algo = algo + " AND " + ignoreIdColumn + ' != "' + ignoreId + '"';
   }
-  const {rows: result} = await dbs[db as keyof typeof dbs].query(
+
+  const d = dbs[db as keyof typeof dbs];
+
+  if(d instanceof pg.Pool){
+    const {rows: result} = await d.query(
+      "select * from " +
+        table +
+        " where " +
+        column +
+        '="' +
+        value +
+        '" ' +
+        algo +
+        " limit 1"
+    );
+
+    return result as unknown[] as any[];
+  }
+  const [result] = await d.query(
     "select * from " +
       table +
       " where " +
@@ -92,6 +111,7 @@ const uniqueness = async function (
   );
 
   return result as unknown[] as any[];
+
 };
 
 const Validator = {

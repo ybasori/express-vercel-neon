@@ -629,7 +629,8 @@ class Model {
         }
 
         if(!!debug){
-          console.log(debug, mainResult);
+          console.log("ini dia");
+          console.log("==========", debug, JSON.stringify(mainResult));
         }
 
         let joinedResult = [...(mainResult as unknown[] as any[])];
