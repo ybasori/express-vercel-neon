@@ -70,18 +70,6 @@ class Model {
   table?: string;
   relations: IRelation | null = null;
 
-
-  normalize(fn:Promise<any>){
-    return new Promise(async (resolve, reject) =>{
-      try{
-
-      }
-      catch(err){
-        reject(err)
-      }
-    })
-  }
-
   /**
    *
    * @param {Object<string, {not: string, in: string[]}|string>} filter
@@ -628,7 +616,7 @@ class Model {
           mainResult = result.rows;
         }
 
-        if(!!debug){
+        if (!!debug) {
           console.log("ini dia");
           console.log("==========", debug, JSON.stringify(mainResult));
         }
@@ -1045,29 +1033,26 @@ class Model {
     console.log(`[${timestamp}]\x1b[38;2;255;165;0m[SQL]\x1b[0m ${query}`);
     console.log(``);
 
-    return new Promise(async (resolve, reject) =>{
-      try{
-
+    return new Promise(async (resolve, reject) => {
+      try {
         if (db instanceof pg.Pool) {
-      const result = await db.query(query);
-      result.rows
+          const result = await db.query(query);
+          
+          console.log("==========",result.rows);
 
-      if(!!result.rows && result.rows.length > 0){
-        resolve(result.rows[0].total)
+          if (!!result.rows && result.rows.length > 0) {
+            resolve(result.rows[0].total);
+          }
+        } else {
+          const result = await db.query(query);
+          if (!!result && result.length > 0) {
+            resolve((result as any[0])[0].total);
+          }
+        }
+      } catch (err) {
+        reject(err);
       }
-    }
-    else{
-      const result = await db.query(query);
-      if(!!result && result.length > 0){
-        resolve((result as any[0])[0].total)
-      }
-    }
-
-      }
-      catch(err){
-        reject(err)
-      }
-    })
+    });
   }
 
   store(payload: any) {
