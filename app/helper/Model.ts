@@ -1026,7 +1026,7 @@ class Model {
       }
 
     const joinQuery = this.joinSqlQuery({
-      joinArr: joinSql,
+      joinArr: combineJoinSql as IJoin[],
       relationObj: this.relations,
       parentTable: !!alternativeTable ? alternativeTable : this.table ?? "",
     },
