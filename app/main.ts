@@ -1,8 +1,14 @@
-import express from "express";
+import express, {
+  ErrorRequestHandler,
+  NextFunction,
+  Request,
+  Response,
+} from "express";
 import cookieParser from "cookie-parser";
 import routes from "./routes";
-import { expandRouter } from "./helper";
+import { expandRouter, promisify, renderHtml } from "./helper";
 import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
 
 dotenv.config();
 
@@ -11,8 +17,10 @@ const app = express();
 app.use(express.static("public"));
 app.use(express.json());
 app.use(cookieParser());
-app.use("/bulma", express.static("node_modules/bulma/css"));
-app.use("/fa", express.static("node_modules/@fortawesome/fontawesome-free"));
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error(err.stack);
+  res.status(500).send(renderHtml());
+});
 app.use("/api", (req, _res, next) => {
   const coloredMethod = `\x1b[32m[${req.method}]\x1b[0m`;
   const queryStr = Object.entries(req.query)
@@ -46,6 +54,5 @@ expandRouter(routes).forEach((item) =>
       )
     : null
 );
-
 
 module.exports = app;

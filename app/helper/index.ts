@@ -93,8 +93,6 @@ export const renderHtml = (payload?: { title?: string; reducer?: any }) => {
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>${title}</title>
-    <link rel="stylesheet" href="/bulma/bulma.min.css">
-    <link rel="stylesheet" href="/fa/css/all.min.css">
       </head>
       <body>
         <div id="root"></div>
