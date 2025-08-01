@@ -399,8 +399,12 @@ class Model {
     joinArr: IJoin[];
     relationObj: IRelation | null;
     dialect: "pgsql" | "mysql";
-  }): // parentTable: string
+  }, debug?: string): // parentTable: string
   string[] {
+    
+      if(!!debug){
+        console.log("=======", debug, joinArr, relationObj, dialect)
+      }
     let filterQuery: string[] = [];
 
     for (let i = 0; i < joinArr.length; i++) {
@@ -998,9 +1002,6 @@ class Model {
           ) === i
       );
 
-      if(!!debug){
-        console.log("=======", debug, combineJoinSql)
-      }
 
     const joinQuery = this.joinSqlQuery(
       joinSql,
@@ -1016,7 +1017,7 @@ class Model {
         ? this.dialect
         : "mysql",
       // this.table ?? ""
-    });
+    }, debug);
 
     const query = `SELECT COUNT(*) AS total FROM ${
       !!alternativeTable ? alternativeTable : this.table ?? ""
