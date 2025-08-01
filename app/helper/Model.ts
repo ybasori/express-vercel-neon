@@ -616,11 +616,6 @@ class Model {
           mainResult = result.rows;
         }
 
-        if (!!debug) {
-          console.log("ini dia");
-          console.log("==========", debug, JSON.stringify(mainResult));
-        }
-
         let joinedResult = [...(mainResult as unknown[] as any[])];
 
         if (!!join && joinedResult.length > 0) {
@@ -789,6 +784,7 @@ class Model {
                   return this.countByFilter({
                     db: relations[joinName].relatedTo.database,
                     table: relations[joinName].relatedTo.table,
+                    dialect: relations[joinName].relatedTo.dialect,
                     filter: {
                       [relations[joinName].relatedTo.foreignKey]:
                         item[relations[joinName].relatedTo.localKey],
@@ -805,12 +801,7 @@ class Model {
 
               if (!!relations && relations[joinName].type === "hasMany") {
                 const data = getAllData[index];
-                // mysql
-                // const [[{total}]] = countAllData[index];
-                // pgsql
-                const {
-                  rows: [{ total }],
-                } = countAllData[index];
+                const total = countAllData[index];
                 joinedResult[z][joinName] = { ...item[joinName], data, total };
               }
             });
@@ -887,6 +878,11 @@ class Model {
 
           return item;
         });
+
+        
+        if (!!debug) {
+          console.log("==========", debug, joinedResult);
+        }
 
         jr = (joinedResult as any[]).map((item) => {
           Object.keys(item).forEach((field) => {
@@ -1037,8 +1033,6 @@ class Model {
       try {
         if (db instanceof pg.Pool) {
           const result = await db.query(query);
-          
-          console.log("==========",result.rows);
 
           if (!!result.rows && result.rows.length > 0) {
             resolve(result.rows[0].total);
