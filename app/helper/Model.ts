@@ -947,10 +947,6 @@ class Model {
       !!debug
     );
 
-    if (!!debug) {
-      console.log("=======", filterQuery);
-    }
-
     const take_join_from_filter = Object.entries(filter)
       .filter(
         ([key]) =>
@@ -1001,6 +997,10 @@ class Model {
             (j) => j.name === item.name && j.joinType === item.joinType
           ) === i
       );
+
+      if(!!debug){
+        console.log("=======", debug, combineJoinSql)
+      }
 
     const joinQuery = this.joinSqlQuery(
       joinSql,
