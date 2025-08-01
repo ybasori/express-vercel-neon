@@ -88,7 +88,7 @@ const CreateEdit: React.FC<ICreateEdit> = ({ isEdit }) => {
 
   const onInitialValue = useCallback(() => {
     fetch(
-      `${api.DASHBOARD_BLOG_CONTENT_LIST}?filter[uid]=${uid}&show[]=uid&show[]=title&show[]=content&show[]=leftJoin_category_uid`,
+      `${api.DASHBOARD_BLOG_CONTENT_LIST}?filter[uid]=${uid}&show[]=uid&show[]=title&show[]=content&show[]=leftjoin_category_uid`,
       {
         method: "GET",
         headers: {
@@ -104,7 +104,7 @@ const CreateEdit: React.FC<ICreateEdit> = ({ isEdit }) => {
         if (detail) {
           setDefaultForm({
             ...detail,
-            category_uid: detail.leftJoin_category_uid,
+            category_uid: detail.leftjoin_category_uid,
             tag_uid: detail.content_tag.data.map((item:{tag:{uid:string; name:string;}})=>({value: item.tag.uid, label: item.tag.name}))
           });
         }
@@ -161,7 +161,7 @@ const CreateEdit: React.FC<ICreateEdit> = ({ isEdit }) => {
                 "title",
                 "created_at",
                 "updated_at",
-                "leftJoin_category_name",
+                "leftjoin_category_name",
               ]}
             )
           );

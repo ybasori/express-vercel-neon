@@ -73,7 +73,7 @@ const Content = () => {
                 "title",
                 "created_at",
                 "updated_at",
-                "leftJoin_category_name",
+                "leftjoin_category_name",
               ]
             })
           );
@@ -108,7 +108,7 @@ const Content = () => {
                 "title",
                 "created_at",
                 "updated_at",
-                "leftJoin_category_name",
+                "leftjoin_category_name",
               ]
             })
       );
@@ -180,7 +180,7 @@ const Content = () => {
           { name: "Title", field: "title", sortable: true, searchable: true },
           {
             name: "Category",
-            field: "leftJoin_category_name",
+            field: "leftjoin_category_name",
             sortable: true,
             searchable: true,
           },

@@ -95,8 +95,8 @@ class Model {
         .filter((item) => {
           const arrkey = item.split("_");
           return arrkey[0] === "join" ||
-            arrkey[0] === "leftJoin" ||
-            arrkey[0] === "rightJoin"
+            arrkey[0] === "leftjoin" ||
+            arrkey[0] === "rightjoin"
             ? false
             : true;
         })
@@ -247,7 +247,7 @@ class Model {
     for (let i = 0; i < joinArr.length; i++) {
       const name = joinArr[i].name;
       const joinType = joinArr[i].joinType;
-      const aliasTable = joinType + "_" + name;
+      const aliasTable = (joinType ?? "").toLowerCase() + "_" + name;
       if (!!relationObj && relationObj[joinArr[i].name].type === "belongsTo") {
         sqlJoin =
           sqlJoin +
@@ -336,7 +336,7 @@ class Model {
     for (let i = 0; i < joinArr.length; i++) {
       const name = joinArr[i].name;
       const joinType = joinArr[i].joinType;
-      const aliasTable = joinType + "_" + name;
+      const aliasTable = (joinType ?? "").toLowerCase() + "_" + name;
       if (!!relationObj && !!relationObj[name].relatedTo.columns) {
         for (let j = 0; j < relationObj[name].relatedTo.columns.length; j++) {
           if (relationObj[name].relatedTo.columns[j].length === 1) {
@@ -406,7 +406,7 @@ class Model {
     for (let i = 0; i < joinArr.length; i++) {
       const name = joinArr[i].name;
       const joinType = joinArr[i].joinType;
-      const aliasTable = joinType + "_" + name;
+      const aliasTable = (joinType ?? "").toLowerCase() + "_" + name;
       if (!!relationObj) {
         filterQuery = [
           ...filterQuery,
@@ -504,19 +504,17 @@ class Model {
           .filter(
             ([key]) =>
               key.startsWith("join_") ||
-              key.startsWith("leftJoin_") ||
-              key.startsWith("rightJoin_")
+              key.startsWith("leftjoin_") ||
+              key.startsWith("rightjoin_")
           )
           .map(([key, value]) => {
+            const joinType = key.split("_")[0];
             return {
-              name: key
-                .replace(/^(leftJoin_|rightJoin_|join_)/, "")
-                .split("_")[0],
-              joinType: key.split("_")[0],
+              name: key.replace(/^(leftjoin_|rightjoin_|join_)/, "").split("_")[0],
+              joinType: joinType==="leftjoin"?"leftJoin":joinType==="rightjoin"?"rightJoin":"join",
               filter: {
-                [key
-                  .replace(/^(leftJoin_|rightJoin_|join_)/, "")
-                  .split("_")[1]]: value,
+                [key.replace(/^(leftjoin_|rightjoin_|join_)/, "").split("_")[1]]:
+                  value,
               },
             };
           });
@@ -957,15 +955,16 @@ class Model {
       .filter(
         ([key]) =>
           key.startsWith("join_") ||
-          key.startsWith("leftJoin_") ||
-          key.startsWith("rightJoin_")
+          key.startsWith("leftjoin_") ||
+          key.startsWith("rightjoin_")
       )
       .map(([key, value]) => {
+        const joinType = key.split("_")[0];
         return {
-          name: key.replace(/^(leftJoin_|rightJoin_|join_)/, "").split("_")[0],
-          joinType: key.split("_")[0],
+          name: key.replace(/^(leftjoin_|rightjoin_|join_)/, "").split("_")[0],
+          joinType: joinType==="leftjoin"?"leftJoin":joinType==="rightjoin"?"rightJoin":"join",
           filter: {
-            [key.replace(/^(leftJoin_|rightJoin_|join_)/, "").split("_")[1]]:
+            [key.replace(/^(leftjoin_|rightjoin_|join_)/, "").split("_")[1]]:
               value,
           },
         };

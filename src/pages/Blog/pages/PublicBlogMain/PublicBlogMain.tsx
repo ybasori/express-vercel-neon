@@ -36,8 +36,8 @@ const PublicBlogMain = () => {
     if (oneTime) {
       setOneTime(false);
       //   if (!!!publicBlogContent.response) {
-      if (!!uid && uid !== publicBlogContent.filter.leftJoin_category_uid) {
-        dispatch(setFilter({ leftJoin_category_uid: uid }));
+      if (!!uid && uid !== publicBlogContent.filter.leftjoin_category_uid) {
+        dispatch(setFilter({ leftjoin_category_uid: uid }));
         dispatch(setPage({ ...publicBlogContent.page, of: 1 }));
       }
       if (!!!uid) {

@@ -114,7 +114,7 @@ const blogController = {
           ],
           filter: {
             "blog_comments.uid": req.params.uid,
-            "leftJoin_author.id": decoded.id,
+            "leftjoin_author.id": decoded.id,
           },
         }
       );

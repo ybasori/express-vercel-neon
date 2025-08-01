@@ -64,7 +64,7 @@ const PublicBlogContentDetail = () => {
 
   const onGetComment = useCallback(() => {
     fetch(
-      `${api.PUBLIC_BLOG_COMMENT_LIST}?show[]=uid&show[]=name&show[]=comment&filter[leftJoin_content_uid]=${uid}&sort[0][by]=created_at&sort[0][order]=desc&page[of]=${page.of}&page[size]=${page.size}`,
+      `${api.PUBLIC_BLOG_COMMENT_LIST}?show[]=uid&show[]=name&show[]=comment&filter[leftjoin_content_uid]=${uid}&sort[0][by]=created_at&sort[0][order]=desc&page[of]=${page.of}&page[size]=${page.size}`,
       {
         method: "GET",
         headers: {
