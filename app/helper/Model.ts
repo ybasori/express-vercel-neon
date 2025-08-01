@@ -1,4 +1,6 @@
 import dbs from "@app/config/db";
+import mysql from "mysql2/promise";
+import pg from "pg";
 
 interface IFilter {
   [x: string]: any;
@@ -33,6 +35,7 @@ export interface IRelation {
     type: "belongsTo" | "hasMany" | "hasOne";
     relatedTo: {
       database: string;
+      dialect: "pgsql" | "mysql";
       table: string;
       localKey: string;
       foreignKey: string;
@@ -58,12 +61,26 @@ export interface IRelation {
 class Model {
   /**
    * @property {string} database
+   * @property {"pgsql" | "mysql"} dialect
    * @property {string} table
    * @property {IRelation} [relations]
    */
   database?: string;
+  dialect: "pgsql" | "mysql" = "mysql";
   table?: string;
   relations: IRelation | null = null;
+
+
+  normalize(fn:Promise<any>){
+    return new Promise(async (resolve, reject) =>{
+      try{
+
+      }
+      catch(err){
+        reject(err)
+      }
+    })
+  }
 
   /**
    *
@@ -73,7 +90,14 @@ class Model {
    * @property {string[]} in - it can be more than one value
    * @returns {string[]}
    */
-  filterQuery(filter: IFilter, table: string, debug?: any): string[] {
+  filterQuery(
+    {
+      filter,
+      table,
+      dialect,
+    }: { filter: IFilter; table: string; dialect: "pgsql" | "mysql" },
+    debug?: any
+  ): string[] {
     if (!!filter) {
       if (!!debug) {
         console.log(filter);
@@ -144,19 +168,25 @@ class Model {
             return `${table}.${key} IN ${filterValue}`;
           }
 
-          // mysql
-          // if (not) {
-          //   return `${table}.${key} NOT LIKE '${filterValue}'`;
-          // }
+          if (dialect === "mysql") {
+            // mysql
+            if (not) {
+              return `${table}.${key} NOT LIKE '${filterValue}'`;
+            }
 
-          // return `${table}.${key} LIKE '${filterValue}'`;
-
-          // pgsql
-          if (not) {
-            return `${table}.${key}::text NOT LIKE '${filterValue}'`;
+            return `${table}.${key} LIKE '${filterValue}'`;
           }
 
-          return `${table}.${key}::text LIKE '${filterValue}'`;
+          if (dialect === "pgsql") {
+            // pgsql
+            if (not) {
+              return `${table}.${key}::text NOT LIKE '${filterValue}'`;
+            }
+
+            return `${table}.${key}::text LIKE '${filterValue}'`;
+          }
+
+          return "";
         });
 
       return queries;
@@ -373,11 +403,16 @@ class Model {
     return sqlJoin !== "" ? ", " + sqlJoin : "";
   }
 
-  joinFilterSqlQuery(
-    joinArr: IJoin[],
-    relationObj: IRelation | null
-    // parentTable: string
-  ): string[] {
+  joinFilterSqlQuery({
+    joinArr,
+    relationObj,
+    dialect,
+  }: {
+    joinArr: IJoin[];
+    relationObj: IRelation | null;
+    dialect: "pgsql" | "mysql";
+  }): // parentTable: string
+  string[] {
     let filterQuery: string[] = [];
 
     for (let i = 0; i < joinArr.length; i++) {
@@ -387,7 +422,11 @@ class Model {
       if (!!relationObj) {
         filterQuery = [
           ...filterQuery,
-          ...this.filterQuery(joinArr[i].filter ?? [], aliasTable),
+          ...this.filterQuery({
+            filter: joinArr[i].filter ?? [],
+            table: aliasTable,
+            dialect,
+          }),
         ];
       }
     }
@@ -432,6 +471,7 @@ class Model {
   getByFilter(
     {
       db: alternativeDb,
+      dialect: alternativeDialect,
       table: alternativeTable,
       filter,
       pagination,
@@ -440,6 +480,7 @@ class Model {
       show = [],
     }: {
       db?: string;
+      dialect?: "pgsql" | "mysql";
       table?: string;
       filter: IFilter;
       pagination?: IPagination;
@@ -459,10 +500,15 @@ class Model {
           : "";
         const db = dbs[dbi as keyof typeof dbs];
 
-        const filterQuery = this.filterQuery(
-          { ...filter },
-          !!alternativeTable ? alternativeTable : this.table ?? ""
-        );
+        const filterQuery = this.filterQuery({
+          filter: { ...filter },
+          table: !!alternativeTable ? alternativeTable : this.table ?? "",
+          dialect: !!alternativeDialect
+            ? alternativeDialect
+            : !!this.dialect
+            ? this.dialect
+            : "mysql",
+        });
         const sortQuery = this.sortQuery(pagination);
         const paginationQuery = this.paginationQuery(pagination);
 
@@ -530,8 +576,17 @@ class Model {
         );
         // selectJoinQuery = (selectJoinQuery!==""?",":"") + selectJoinQuery;
         const filterJoinQuery = this.joinFilterSqlQuery(
-          combineJoinSql as IJoin[],
-          !!alternativeRelations ? alternativeRelations : this.relations
+          {
+            joinArr: combineJoinSql as IJoin[],
+            relationObj: !!alternativeRelations
+              ? alternativeRelations
+              : this.relations,
+            dialect: !!alternativeDialect
+              ? alternativeDialect
+              : !!this.dialect
+              ? this.dialect
+              : "mysql",
+          }
           // !!alternativeTable ? alternativeTable : (this.table ?? "")
         );
 
@@ -549,10 +604,29 @@ class Model {
         console.log(`[${timestamp}]\x1b[38;2;255;165;0m[SQL]\x1b[0m ${query}`);
         console.log(``);
 
-        // mysql
-        // const [mainResult] = await db.query(query);
-        // pgsql
-        const {rows:mainResult} = await db.query(query);
+        let mainResult;
+
+        if (
+          (!!alternativeDialect
+            ? alternativeDialect
+            : !!this.dialect
+            ? this.dialect
+            : "mysql") === "mysql"
+        ) {
+          // mysql
+          [mainResult] = await (db as mysql.Pool).query(query);
+        }
+        if (
+          (!!alternativeDialect
+            ? alternativeDialect
+            : !!this.dialect
+            ? this.dialect
+            : "mysql") === "pgsql"
+        ) {
+          // pgsql
+          const result = await (db as pg.Pool).query(query);
+          mainResult = result.rows;
+        }
 
         let joinedResult = [...(mainResult as unknown[] as any[])];
 
@@ -741,7 +815,9 @@ class Model {
                 // mysql
                 // const [[{total}]] = countAllData[index];
                 // pgsql
-                const {rows: [{total}]} = countAllData[index];
+                const {
+                  rows: [{ total }],
+                } = countAllData[index];
                 joinedResult[z][joinName] = { ...item[joinName], data, total };
               }
             });
@@ -853,11 +929,13 @@ class Model {
       filter,
       join = [],
       db: alternativeDb,
+      dialect: alternativeDialect,
       table: alternativeTable,
     }: {
       filter: any;
       join?: IJoin[];
       db?: string;
+      dialect?: "pgsql" | "mysql";
       table?: string;
     },
     debug?: any
@@ -870,8 +948,15 @@ class Model {
     const db = dbs[dbi as keyof typeof dbs];
 
     const filterQuery = this.filterQuery(
-      { ...filter },
-      !!alternativeTable ? alternativeTable : this.table ?? "",
+      {
+        filter: { ...filter },
+        table: !!alternativeTable ? alternativeTable : this.table ?? "",
+        dialect: !!alternativeDialect
+          ? alternativeDialect
+          : !!this.dialect
+          ? this.dialect
+          : "mysql",
+      },
       !!debug
     );
 
@@ -934,11 +1019,16 @@ class Model {
       this.relations,
       !!alternativeTable ? alternativeTable : this.table ?? ""
     );
-    const filterJoinQuery = this.joinFilterSqlQuery(
-      combineJoinSql as IJoin[],
-      this.relations
+    const filterJoinQuery = this.joinFilterSqlQuery({
+      joinArr: combineJoinSql as IJoin[],
+      relationObj: this.relations,
+      dialect: !!alternativeDialect
+        ? alternativeDialect
+        : !!this.dialect
+        ? this.dialect
+        : "mysql",
       // this.table ?? ""
-    );
+    });
 
     const query = `SELECT COUNT(*) AS total FROM ${
       !!alternativeTable ? alternativeTable : this.table ?? ""
@@ -950,7 +1040,29 @@ class Model {
     console.log(`[${timestamp}]\x1b[38;2;255;165;0m[SQL]\x1b[0m ${query}`);
     console.log(``);
 
-    return db.query(query);
+    return new Promise(async (resolve, reject) =>{
+      try{
+
+        if (db instanceof pg.Pool) {
+      const result = await db.query(query);
+      result.rows
+
+      if(!!result.rows && result.rows.length > 0){
+        resolve(result.rows[0].total)
+      }
+    }
+    else{
+      const result = await db.query(query);
+      if(!!result && result.length > 0){
+        resolve((result as any[0])[0].total)
+      }
+    }
+
+      }
+      catch(err){
+        reject(err)
+      }
+    })
   }
 
   store(payload: any) {
@@ -981,6 +1093,9 @@ class Model {
     console.log(`[${timestamp}]\x1b[38;2;255;165;0m[SQL]\x1b[0m ${query}`);
     console.log(``);
 
+    if (db instanceof pg.Pool) {
+      return db.query(query);
+    }
     return db.query(query);
   }
 
@@ -991,11 +1106,18 @@ class Model {
       join = [],
       table: alternativeTable,
       relations: alternativeRelations = null,
-    }: { filter: any; join?: IJoin[]; relations?: IRelation | null; table?: string }
+      dialect: alternativeDialect,
+    }: {
+      filter: any;
+      join?: IJoin[];
+      relations?: IRelation | null;
+      table?: string;
+      dialect?: "pgsql" | "mysql";
+    }
   ) {
     const dbi = this.database ?? "";
     const db = dbs[dbi as keyof typeof dbs];
-    
+
     const joinSql = join.filter(
       (item) =>
         typeof item !== "string" &&
@@ -1010,29 +1132,55 @@ class Model {
       !!alternativeTable ? alternativeTable : this.table ?? ""
     );
 
-    // mysql
-    // const set = [
-    //   ...Object.keys(payload).map((key) =>
-    //     payload[key] === null ? `${!!alternativeTable ? alternativeTable : this.table ?? ""}.${key}= NULL ` : `${!!alternativeTable ? alternativeTable : this.table ?? ""}.${key}='${payload[key]}'`
-    //   ),
-    //   `${!!alternativeTable ? alternativeTable : this.table ?? ""}.updated_at = '${new Date()
-    //     .toISOString()
-    //     .replace("T", " ")
-    //     .replace("Z", "")
-    //     .slice(0, 19)}'`,
-    // ].join(" , ");
+    let set = "";
 
-    //pgsql
-    const set = [
-      ...Object.keys(payload).map((key) =>
-        payload[key] === null ? `${key}= NULL ` : `${key}='${payload[key]}'`
-      ),
-      `updated_at = '${new Date()
-        .toISOString()
-        .replace("T", " ")
-        .replace("Z", "")
-        .slice(0, 19)}'`,
-    ].join(" , ");
+    if (
+      (!!alternativeDialect
+        ? alternativeDialect
+        : !!this.dialect
+        ? this.dialect
+        : "mysql") === "mysql"
+    ) {
+      // mysql
+      set = [
+        ...Object.keys(payload).map((key) =>
+          payload[key] === null
+            ? `${
+                !!alternativeTable ? alternativeTable : this.table ?? ""
+              }.${key}= NULL `
+            : `${
+                !!alternativeTable ? alternativeTable : this.table ?? ""
+              }.${key}='${payload[key]}'`
+        ),
+        `${
+          !!alternativeTable ? alternativeTable : this.table ?? ""
+        }.updated_at = '${new Date()
+          .toISOString()
+          .replace("T", " ")
+          .replace("Z", "")
+          .slice(0, 19)}'`,
+      ].join(" , ");
+    }
+
+    if (
+      (!!alternativeDialect
+        ? alternativeDialect
+        : !!this.dialect
+        ? this.dialect
+        : "mysql") === "pgsql"
+    ) {
+      //pgsql
+      set = [
+        ...Object.keys(payload).map((key) =>
+          payload[key] === null ? `${key}= NULL ` : `${key}='${payload[key]}'`
+        ),
+        `updated_at = '${new Date()
+          .toISOString()
+          .replace("T", " ")
+          .replace("Z", "")
+          .slice(0, 19)}'`,
+      ].join(" , ");
+    }
 
     const where = [
       ...Object.keys(filter).map((key) => `${key}='${filter[key]}'`),
@@ -1043,6 +1191,9 @@ class Model {
     console.log(`[${timestamp}]\x1b[38;2;255;165;0m[SQL]\x1b[0m ${query}`);
     console.log(``);
 
+    if (db instanceof pg.Pool) {
+      return db.query(query);
+    }
     return db.query(query);
   }
   delete(filter: any) {
@@ -1058,6 +1209,9 @@ class Model {
     console.log(`[${timestamp}]\x1b[38;2;255;165;0m[SQL]\x1b[0m ${query}`);
     console.log(``);
 
+    if (db instanceof pg.Pool) {
+      return db.query(query);
+    }
     return db.query(query);
   }
 }

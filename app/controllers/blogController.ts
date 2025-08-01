@@ -53,7 +53,7 @@ const blogController = {
         ],
         show,
       });
-      const {rows: [blogContentTotal]} = await blogContentModel.countByFilter({
+      const total = await blogContentModel.countByFilter({
         filter: {
           deleted_at: "null",
           ...filter,
@@ -71,7 +71,7 @@ const blogController = {
         message: "Success!",
         result: {
           data: blogContents,
-          total: blogContentTotal.total,
+          total: total,
         },
       });
     } catch (err: any) {
@@ -159,7 +159,7 @@ const blogController = {
         join: [{ name: "content", joinType: "leftJoin", show: ["uid"] }],
         show,
       });
-      const {rows: [blogContentTotal]} = await blogContentModel.countByFilter({
+      const total = await blogContentModel.countByFilter({
         filter: {
           deleted_at: "null",
           ...filter,
@@ -171,7 +171,7 @@ const blogController = {
         message: "Success!",
         result: {
           data: blogContents,
-          total: blogContentTotal.total,
+          total: total,
         },
       });
     } catch (err: any) {
@@ -317,7 +317,7 @@ const blogController = {
         ],
         show,
       });
-      const {rows: [blogContentTotal]} = await blogContentModel.countByFilter({
+      const total = await blogContentModel.countByFilter({
         filter: {
           deleted_at: "null",
           ...filter,
@@ -333,7 +333,7 @@ const blogController = {
         message: "Success!",
         result: {
           data: blogContents,
-          total: blogContentTotal.total,
+          total: total,
         },
       });
     } catch (err: any) {
@@ -384,7 +384,7 @@ const blogController = {
         ],
         show,
       });
-      const {rows: [blogContentTotal]} = await blogContentModel.countByFilter({
+      const total = await blogContentModel.countByFilter({
         filter: {
           deleted_at: "null",
           ...filter,
@@ -395,7 +395,7 @@ const blogController = {
         message: "Success!",
         result: {
           data: blogContents,
-          total: blogContentTotal.total,
+          total: total,
         },
       });
     } catch (err: any) {
@@ -449,7 +449,7 @@ const blogController = {
         ],
         show,
       });
-      const {rows: [blogContentTotal]} = await blogContentModel.countByFilter({
+      const total = await blogContentModel.countByFilter({
         filter: {
           created_by_user_id: decoded.id,
           deleted_at: "null",
@@ -461,7 +461,7 @@ const blogController = {
         message: "Success!",
         result: {
           data: blogContents,
-          total: blogContentTotal.total,
+          total: total,
         },
       });
     } catch (err: any) {
@@ -508,12 +508,16 @@ const blogController = {
       let optionalInputWithRelation = {};
       if (!!req.body.category_uid) {
         const blogCategoryModel = new BlogCategory();
-        const [blogCategories] = await blogCategoryModel.getByFilter({
+        const result = await blogCategoryModel.getByFilter({
           filter: {
             created_by_user_id: decoded.id,
             uid: req.body.category_uid,
           },
         });
+
+        console.log(result);
+
+        const blogCategories = result[0];
 
         optionalInputWithRelation = {
           ...optionalInputWithRelation,
@@ -740,7 +744,7 @@ const blogController = {
         join: [{ name: "created_by", show: ["name"] }],
         show,
       });
-      const {rows: [blogContentTotal]} = await blogContentModel.countByFilter({
+      const total = await blogContentModel.countByFilter({
         filter: {
           created_by_user_id: decoded.id,
           deleted_at: "null",
@@ -752,7 +756,7 @@ const blogController = {
         message: "Success!",
         result: {
           data: blogContents,
-          total: blogContentTotal.total,
+          total: total,
         },
       });
     } catch (err: any) {
@@ -937,7 +941,7 @@ const blogController = {
         join: [{ name: "created_by", show: ["name"] }],
         show,
       });
-      const {rows: [blogContentTotal]} = await blogContentModel.countByFilter({
+      const total = await blogContentModel.countByFilter({
         filter: {
           created_by_user_id: decoded.id,
           deleted_at: "null",
@@ -949,7 +953,7 @@ const blogController = {
         message: "Success!",
         result: {
           data: blogContents,
-          total: blogContentTotal.total,
+          total: total,
         },
       });
     } catch (err: any) {
