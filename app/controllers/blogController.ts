@@ -327,7 +327,7 @@ const blogController = {
           { name: "category", show: ["name"], joinType:"leftJoin" },
           { name: "created_by", show: ["name"] },
         ],
-      });
+      }, "oleee");
       return res.status(200).json({
         statusCode: 200,
         message: "Success!",
