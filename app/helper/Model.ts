@@ -628,6 +628,10 @@ class Model {
           mainResult = result.rows;
         }
 
+        if(!!debug){
+          console.log(debug, mainResult);
+        }
+
         let joinedResult = [...(mainResult as unknown[] as any[])];
 
         if (!!join && joinedResult.length > 0) {
